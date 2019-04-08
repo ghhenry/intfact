@@ -92,6 +92,21 @@ func (l *Factors) IsComplete() int {
 	return res
 }
 
+// PrimTest runs a primality test on the factors and updates their status.
+// The test is done by calling func (*big.Int) ProbablyPrime(n)
+// If retest is true checks again probably prime factors.
+func (l *Factors) PrimTest(n int, retest bool) {
+	for f := l.First; f != nil; f = f.Next {
+		if f.Stat == Unknown || retest && f.Stat == ProbPrime {
+			if f.Fac.ProbablyPrime(n) {
+				f.Stat = ProbPrime
+			} else {
+				f.Stat = Composite
+			}
+		}
+	}
+}
+
 // Insert is a low level function that adds a factor to the list.
 // This operation does not preserve the product.
 func (l *Factors) Insert(f *Fact) {
