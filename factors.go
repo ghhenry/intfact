@@ -75,6 +75,23 @@ func (l *Factors) RecordSplit(fp **Fact, a, b *big.Int) {
 	l.Insert(fn)
 }
 
+// IsComplete checks if the factorisation is complete.
+// It returns 0 if there are still unknown or composite factors,
+// 1 if all factors are at least probably prime, and
+// 2 if all factors are prime.
+func (l *Factors) IsComplete() int {
+	res := 2
+	for f := l.First; f != nil; f = f.Next {
+		switch f.Stat {
+		case Unknown, Composite:
+			return 0
+		case ProbPrime:
+			res = 1
+		}
+	}
+	return res
+}
+
 // Insert is a low level function that adds a factor to the list.
 // This operation does not preserve the product.
 func (l *Factors) Insert(f *Fact) {
