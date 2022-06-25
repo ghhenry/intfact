@@ -21,10 +21,10 @@ func (l *Factors) TrialDivision(bound uint32) {
 					v = nil
 					return true
 				}
-				d, r := new(big.Int).DivMod(v, t, new(big.Int))
-				if r.Sign() != 0 {
+				if primes.Fastmod(v, p) != 0 {
 					return false
 				}
+				d := new(big.Int).Div(v, t)
 				l.Insert(&Fact{Fac: t, Exp: f.Exp, Stat: Prime})
 				v = d
 			}
