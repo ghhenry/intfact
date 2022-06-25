@@ -113,6 +113,27 @@ func TestTridiv(t *testing.T) {
 				},
 			},
 		},
+		{
+			n: big.NewInt(16654987545246599),
+			b: 10000000,
+			l: []tf{
+				{
+					f: big.NewInt(29),
+					e: 1,
+					s: Prime,
+				},
+				{
+					f: big.NewInt(67),
+					e: 1,
+					s: Prime,
+				},
+				{
+					f: big.NewInt(8571789781393),
+					e: 1,
+					s: Prime,
+				},
+			},
+		},
 	}
 	for _, test := range tests {
 		l := NewFactors(test.n)
