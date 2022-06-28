@@ -1,10 +1,5 @@
-github.com/ghhenry/intsqrt v0.0.0-20190316182902-24a2ebe55a5b h1:4E6hT/0hUMK8eGziBngROTQO0rt5UIUSnkCQ7GbHKEE=
-github.com/ghhenry/intsqrt v0.0.0-20190316182902-24a2ebe55a5b/go.mod h1:/WsuPZ6cUecCq+WS3ebKtGcuaY6AUcQZ18JIe8EvUS8=
 github.com/ghhenry/intsqrt v0.0.0-20200501091259-ec7333bc6ef3 h1:jNrniLMis28iCyzJso0EfK5MLprZalCuss1uQ9V9Sqc=
 github.com/ghhenry/intsqrt v0.0.0-20200501091259-ec7333bc6ef3/go.mod h1:YZT50PbJW5AjSMxmrwJWPfw3xC+qOtsIYKnAZ+mLPVE=
-github.com/ghhenry/primes v0.0.0-20190317151143-c8cb6e1934b6 h1:6imcRWU1MCtzRrt2VmqEkQIBareMXieIk98NBSU8Hvc=
-github.com/ghhenry/primes v0.0.0-20190317151143-c8cb6e1934b6/go.mod h1:F1Py7/b5svstampT0ag0SUUWfzvAgSdzzMIVJDea1Gc=
-github.com/ghhenry/primes v0.0.0-20220625071925-53be375c9a9e h1:M4I1XFFHJEMJODHzjeqBmAE/8vG8UARjxmNagAs9ob8=
-github.com/ghhenry/primes v0.0.0-20220625071925-53be375c9a9e/go.mod h1:aeLXq8H02XyID44wWMVbCH4WemE6FKe1NvzmN/8vfhI=
+github.com/ghhenry/primes v0.0.0-20220628071846-8f3905955e95 h1:jEMgXL+cAuv/aK4M4dYMdxiRgAwijjPYRtPXi4l7Rss=
+github.com/ghhenry/primes v0.0.0-20220628071846-8f3905955e95/go.mod h1:aeLXq8H02XyID44wWMVbCH4WemE6FKe1NvzmN/8vfhI=
 github.com/soniakeys/integer v1.0.0 h1:AT113Q6L1jBvD2RxWN7lWjWszqjJmXkVvdO3mg0x3oA=
-github.com/soniakeys/integer v1.0.0/go.mod h1:Un1sOTfmXGrWDb2oS2IQDCK6J3oCdpAtB2BKtqtwawA=
