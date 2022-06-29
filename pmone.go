@@ -33,6 +33,7 @@ func (h *p2helper) getPower(e uint32) *big.Int {
 
 func PmOne(ctx context.Context, n *big.Int, b, b1 uint32) (fac *big.Int, err error) {
 	var a = big.NewInt(3)
+	gcd := newGcdtest(n, 20)
 	phase1 := func(p uint32) bool {
 		exp := int64(p)
 		for {
@@ -44,13 +45,8 @@ func PmOne(ctx context.Context, n *big.Int, b, b1 uint32) (fac *big.Int, err err
 		}
 		a.Exp(a, big.NewInt(exp), n)
 		d := new(big.Int).Sub(a, bigOne)
-		d.GCD(nil, nil, d, n)
-		if d.Cmp(bigOne) != 0 {
-			if d.Cmp(n) != 0 {
-				fac, err = d, nil
-				return true
-			}
-			fac, err = nil, errors.New("no factor found")
+		fac, err = gcd.test(d)
+		if fac != nil || err != nil {
 			return true
 		}
 		return false
@@ -72,19 +68,18 @@ func PmOne(ctx context.Context, n *big.Int, b, b1 uint32) (fac *big.Int, err err
 			a.Mod(a, n)
 		}
 		d := new(big.Int).Sub(a, bigOne)
-		d.GCD(nil, nil, d, n)
-		if d.Cmp(bigOne) != 0 {
-			if d.Cmp(n) != 0 {
-				fac, err = d, nil
-				return true
-			}
-			fac, err = nil, errors.New("no factor found")
+		fac, err = gcd.test(d)
+		if fac != nil || err != nil {
 			return true
 		}
 		prev = p
 		return false
 	}
 	primes.Iterate(b+1, b1, phase2)
+	if fac != nil || err != nil {
+		return
+	}
+	fac, err = gcd.finish()
 	if fac != nil || err != nil {
 		return
 	}

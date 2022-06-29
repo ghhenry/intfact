@@ -6,10 +6,8 @@ import (
 	"math/big"
 )
 
-var bigOne = big.NewInt(1)
-
 // Rho tries to factor n with Pollard's rho method.
-func Rho(ctx context.Context, n *big.Int) (*big.Int, error) {
+func Rho(ctx context.Context, n *big.Int) (fac *big.Int, err error) {
 	a := big.NewInt(2)
 	c := &big.Int{}
 	c.SetUint64(1)
@@ -22,10 +20,8 @@ func Rho(ctx context.Context, n *big.Int) (*big.Int, error) {
 
 	l := f(a)
 	h := f(f(a))
-	it := 0
-	t := big.NewInt(1)
+	gcd := newGcdtest(n, 20)
 	for {
-		it++
 		select {
 		case <-ctx.Done():
 			return nil, errors.New("cancelled")
@@ -33,20 +29,9 @@ func Rho(ctx context.Context, n *big.Int) (*big.Int, error) {
 		}
 		d := new(big.Int).Sub(h, l)
 		d.Abs(d)
-		t.Mul(t, d)
-		t.Mod(t, n)
-		if it%10 == 0 {
-			// since GCD is expensive we check only every tenth iteration
-			// this may collapse some small factors
-			r := new(big.Int).GCD(nil, nil, t, n)
-			if r.Cmp(bigOne) != 0 {
-				if r.Cmp(n) != 0 {
-					return r, nil
-				} else {
-					return nil, errors.New("no factor found")
-				}
-			}
-			t.SetInt64(1)
+		fac, err = gcd.test(d)
+		if fac != nil || err != nil {
+			return
 		}
 		l = f(l)
 		h = f(f(h))

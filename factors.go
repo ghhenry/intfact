@@ -16,6 +16,56 @@ const (
 	Prime
 )
 
+var (
+	bigOne = big.NewInt(1)
+)
+
+var (
+	errGcdIsN = errors.New("no factor found")
+)
+
+type gcdtest struct {
+	n      *big.Int
+	it     int
+	period int
+	acc    *big.Int
+}
+
+func newGcdtest(n *big.Int, period int) *gcdtest {
+	return &gcdtest{
+		n:      n,
+		period: period,
+		acc:    new(big.Int).Set(bigOne),
+	}
+}
+
+func (t *gcdtest) test(a *big.Int) (fac *big.Int, err error) {
+	t.it++
+	t.acc.Mul(t.acc, a)
+	t.acc.Mod(t.acc, t.n)
+	if t.it >= t.period {
+		fac, err = t.finish()
+		if fac != nil || err != nil {
+			return
+		}
+		t.it = 0
+		t.acc.Set(bigOne)
+	}
+	return
+}
+
+func (t *gcdtest) finish() (fac *big.Int, err error) {
+	d := new(big.Int).GCD(nil, nil, t.acc, t.n)
+	if d.Cmp(bigOne) != 0 {
+		if d.Cmp(t.n) == 0 {
+			fac, err = nil, errGcdIsN
+		} else {
+			fac, err = d, nil
+		}
+	}
+	return
+}
+
 // Fact contains information about the factors
 type Fact struct {
 	Fac  *big.Int
