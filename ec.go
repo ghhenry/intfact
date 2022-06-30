@@ -81,19 +81,24 @@ func (p ordinary) String() string {
 }
 
 func randCurve(random io.Reader, n *big.Int) (*curve, point) {
-	px, _ := rand.Int(random, n)
-	py, _ := rand.Int(random, n)
-	p := ordinary{px, py}
-	a, _ := rand.Int(random, n)
-	// calculate b as y**2 - x(x**2+a)
-	b := new(big.Int).Mul(py, py)
-	t0 := new(big.Int).Mul(px, px)
-	t0.Add(t0, a)
-	t0.Mod(t0, n)
-	t0.Mul(t0, px)
-	b.Sub(b, t0)
-	b.Mod(b, n)
-	return &curve{n, a, b}, p
+	for {
+		px, _ := rand.Int(random, n)
+		py, _ := rand.Int(random, n)
+		p := ordinary{px, py}
+		a, _ := rand.Int(random, n)
+		// calculate b as y**2 - x(x**2+a)
+		b := new(big.Int).Mul(py, py)
+		t0 := new(big.Int).Mul(px, px)
+		t0.Add(t0, a)
+		t0.Mod(t0, n)
+		t0.Mul(t0, px)
+		b.Sub(b, t0)
+		b.Mod(b, n)
+		c := &curve{n, a, b}
+		if c.isNonSingular() {
+			return c, p
+		}
+	}
 }
 
 func (c *curve) neg(a point) point {
@@ -171,6 +176,21 @@ func (c *curve) rawAdd(a, b point) (point, error) {
 	t0.Sub(t0, a.y())
 	t0.Mod(t0, c.n) // this is the y-coordinate of the sum
 	return ordinary{t1, t0}, nil
+}
+
+func (c *curve) isNonSingular() bool {
+	t0 := new(big.Int).Mul(c.a, c.a)
+	t0.Mod(t0, c.n)
+	t0.Mul(t0, c.a)
+	t0.Mod(t0, c.n)
+	t0.Add(t0, t0)
+	t0.Add(t0, t0)
+	t1 := new(big.Int).Mul(c.b, c.b)
+	t1.Mod(t1, c.n)
+	t1.Mul(t1, big.NewInt(27))
+	t0.Add(t0, t1)
+	t0.Mod(t0, c.n)
+	return t0.Sign() != 0
 }
 
 func (c *curve) String() string {
