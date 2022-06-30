@@ -1,7 +1,9 @@
 package intfact
 
 import (
+	"context"
 	"fmt"
+	"io"
 	"math/big"
 	"reflect"
 	"testing"
@@ -282,5 +284,233 @@ func TestFactorFound(t *testing.T) {
 		}
 	} else {
 		t.Error("unexpected error", err)
+	}
+}
+
+func Test_curve_mult(t *testing.T) {
+	type fields struct {
+		n *big.Int
+		a *big.Int
+		b *big.Int
+	}
+	type args struct {
+		p point
+		m *big.Int
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    point
+		wantErr bool
+	}{
+		{
+			name: "-1",
+			fields: fields{
+				n: big.NewInt(47),
+				a: big.NewInt(2),
+				b: big.NewInt(3),
+			},
+			args: args{
+				p: ordinary{
+					px: big.NewInt(3),
+					py: big.NewInt(6),
+				},
+				m: big.NewInt(-1),
+			},
+			want: ordinary{
+				px: big.NewInt(3),
+				py: big.NewInt(41),
+			},
+			wantErr: false,
+		},
+		{
+			name: "0",
+			fields: fields{
+				n: big.NewInt(47),
+				a: big.NewInt(2),
+				b: big.NewInt(3),
+			},
+			args: args{
+				p: ordinary{
+					px: big.NewInt(3),
+					py: big.NewInt(6),
+				},
+				m: big.NewInt(0),
+			},
+			want:    neutral{},
+			wantErr: false,
+		},
+		{
+			name: "1",
+			fields: fields{
+				n: big.NewInt(47),
+				a: big.NewInt(2),
+				b: big.NewInt(3),
+			},
+			args: args{
+				p: ordinary{
+					px: big.NewInt(3),
+					py: big.NewInt(6),
+				},
+				m: big.NewInt(1),
+			},
+			want: ordinary{
+				px: big.NewInt(3),
+				py: big.NewInt(6),
+			},
+			wantErr: false,
+		},
+		{
+			name: "2",
+			fields: fields{
+				n: big.NewInt(47),
+				a: big.NewInt(2),
+				b: big.NewInt(3),
+			},
+			args: args{
+				p: ordinary{
+					px: big.NewInt(12),
+					py: big.NewInt(4),
+				},
+				m: big.NewInt(2),
+			},
+			want: ordinary{
+				px: big.NewInt(8),
+				py: big.NewInt(25),
+			},
+			wantErr: false,
+		},
+		{
+			name: "12",
+			fields: fields{
+				n: big.NewInt(47),
+				a: big.NewInt(2),
+				b: big.NewInt(3),
+			},
+			args: args{
+				p: ordinary{
+					px: big.NewInt(12),
+					py: big.NewInt(4),
+				},
+				m: big.NewInt(12),
+			},
+			want: ordinary{
+				px: big.NewInt(27),
+				py: big.NewInt(0),
+			},
+			wantErr: false,
+		},
+		{
+			name: "24",
+			fields: fields{
+				n: big.NewInt(47),
+				a: big.NewInt(2),
+				b: big.NewInt(3),
+			},
+			args: args{
+				p: ordinary{
+					px: big.NewInt(3),
+					py: big.NewInt(6),
+				},
+				m: big.NewInt(24),
+			},
+			want:    neutral{},
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			c := &curve{
+				n: tt.fields.n,
+				a: tt.fields.a,
+				b: tt.fields.b,
+			}
+			got, err := c.mult(tt.args.p, tt.args.m)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("mult() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !got.equal(tt.want) {
+				t.Errorf("mult() got = %v, want %v", got, tt.want)
+			}
+		})
+	}
+}
+
+func TestEc(t *testing.T) {
+	type args struct {
+		ctx    context.Context
+		random io.Reader
+		n      *big.Int
+		b      uint32
+		b1     uint32
+	}
+	tests := []struct {
+		name    string
+		args    args
+		wantFac *big.Int
+		wantErr bool
+	}{
+		{
+			name: "2491",
+			args: args{
+				ctx:    context.Background(),
+				random: &lcRandom{36},
+				n:      big.NewInt(2491),
+				b:      10,
+				b1:     100,
+			},
+			wantFac: big.NewInt(53),
+			wantErr: false,
+		},
+		{
+			name: "n1",
+			args: args{
+				ctx:    context.Background(),
+				random: &lcRandom{13},
+				n:      big.NewInt(43217358712783469),
+				b:      1000,
+				b1:     10000,
+			},
+			wantFac: big.NewInt(7420146347),
+			wantErr: false,
+		},
+		{
+			name: "f6",
+			args: args{
+				ctx:    context.Background(),
+				random: &lcRandom{14},
+				n:      intval("18446744073709551617"),
+				b:      1000,
+				b1:     10000,
+			},
+			wantFac: big.NewInt(274177),
+			wantErr: false,
+		},
+		{
+			name: "f7",
+			args: args{
+				ctx:    context.Background(),
+				random: &lcRandom{16},
+				n:      intval("340282366920938463463374607431768211457"),
+				b:      10000,
+				b1:     215000,
+			},
+			wantFac: big.NewInt(59649589127497217),
+			wantErr: false,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			gotFac, err := Ec(tt.args.ctx, tt.args.random, tt.args.n, tt.args.b, tt.args.b1)
+			if (err != nil) != tt.wantErr {
+				t.Errorf("Ec() error = %v, wantErr %v", err, tt.wantErr)
+				return
+			}
+			if !reflect.DeepEqual(gotFac, tt.wantFac) {
+				t.Errorf("Ec() gotFac = %v, want %v", gotFac, tt.wantFac)
+			}
+		})
 	}
 }

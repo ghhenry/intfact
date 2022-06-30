@@ -1,9 +1,11 @@
 package intfact
 
 import (
+	"context"
 	"crypto/rand"
 	"errors"
 	"fmt"
+	"github.com/ghhenry/primes"
 	"io"
 	"math/big"
 )
@@ -173,4 +175,137 @@ func (c *curve) rawAdd(a, b point) (point, error) {
 
 func (c *curve) String() string {
 	return fmt.Sprintf("a=%v, b=%v over GF(%v)", c.a, c.b, c.n)
+}
+
+func (c *curve) mult(p point, m *big.Int) (point, error) {
+	if m.Sign() < 0 {
+		m = new(big.Int).Neg(m)
+		p = c.neg(p)
+	} else {
+		// we change m, so make a copy
+		m = new(big.Int).Set(m)
+	}
+	var r point = neutral{}
+	for m.Sign() != 0 {
+		var err error
+		if m.Bit(0) == 1 {
+			m.SetBit(m, 0, 0)
+			r, err = c.add(r, p)
+		} else {
+			m.Rsh(m, 1)
+			p, err = c.double(p)
+		}
+		if err != nil {
+			return nil, err
+		}
+	}
+	return r, nil
+}
+
+type p2echelper struct {
+	c         *curve
+	multiples []point
+}
+
+func newEcHelper(a point, c *curve) (*p2echelper, error) {
+	p2, err := c.double(a)
+	if err != nil {
+		return nil, err
+	}
+	return &p2echelper{
+		c:         c,
+		multiples: []point{p2},
+	}, nil
+}
+
+func (h *p2echelper) getMultiple(e uint32) (point, error) {
+	i := int(e/2 - 1)
+	for i >= len(h.multiples) {
+		k, err := h.c.add(h.multiples[0], h.multiples[len(h.multiples)-1])
+		if err != nil {
+			return nil, err
+		}
+		h.multiples = append(h.multiples, k)
+	}
+	return h.multiples[i], nil
+}
+
+func Ec(ctx context.Context, random io.Reader, n *big.Int, b, b1 uint32) (fac *big.Int, err error) {
+	c, pt := randCurve(random, n)
+	phase1 := func(p uint32) bool {
+		select {
+		case <-ctx.Done():
+			err = errors.New("cancelled")
+			return true
+		default:
+		}
+		mult := int64(p)
+		for {
+			ne := mult * int64(p)
+			if ne > int64(b) {
+				break
+			}
+			mult = ne
+		}
+		pt, err = c.mult(pt, big.NewInt(mult))
+		if err != nil {
+			if e, ok := err.(factorError); ok {
+				fac = e.f
+				err = nil
+			}
+			return true
+		}
+		if pt.isZero() {
+			err = errors.New("no factor found")
+			return true
+		}
+		return false
+	}
+	primes.Iterate(2, b, phase1)
+	if fac != nil || err != nil {
+		return
+	}
+
+	// phase2
+	var prev uint32
+	h, err := newEcHelper(pt, c)
+	if err != nil {
+		if e, ok := err.(factorError); ok {
+			fac = e.f
+			err = nil
+		}
+		return
+	}
+	phase2 := func(p uint32) bool {
+		select {
+		case <-ctx.Done():
+			err = errors.New("cancelled")
+			return true
+		default:
+		}
+		if prev == 0 {
+			pt, err = c.mult(pt, big.NewInt(int64(p)))
+		} else {
+			diff := p - prev
+			var ptInc point
+			ptInc, err = h.getMultiple(diff)
+			if err == nil {
+				pt, err = c.add(pt, ptInc)
+			}
+		}
+		if err != nil {
+			if e, ok := err.(factorError); ok {
+				fac = e.f
+				err = nil
+			}
+			return true
+		}
+		prev = p
+		return false
+	}
+	primes.Iterate(b+1, b1, phase2)
+	if fac != nil || err != nil {
+		return
+	}
+	return nil, errors.New("no factor found")
 }
