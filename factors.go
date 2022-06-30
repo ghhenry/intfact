@@ -17,7 +17,8 @@ const (
 )
 
 var (
-	bigOne = big.NewInt(1)
+	bigOne   = big.NewInt(1)
+	bigThree = big.NewInt(3)
 )
 
 var (
