@@ -7,8 +7,7 @@ import (
 	"math/big"
 )
 
-func EcParallel(ctx context.Context, random io.Reader, n *big.Int, b, b1 uint32) (*big.Int, error) {
-	pf := 100
+func EcParallel(ctx context.Context, random io.Reader, n *big.Int, b, b1 uint32, parallel int) (*big.Int, error) {
 	childctx, cancel := context.WithCancel(ctx)
 	defer cancel()
 	type result struct {
@@ -16,7 +15,7 @@ func EcParallel(ctx context.Context, random io.Reader, n *big.Int, b, b1 uint32)
 		err error
 	}
 	resultC := make(chan result)
-	for i := 0; i < pf; i++ {
+	for i := 0; i < parallel; i++ {
 		go func() {
 			fac, err := Ec(childctx, random, n, b, b1)
 			select {
@@ -27,7 +26,7 @@ func EcParallel(ctx context.Context, random io.Reader, n *big.Int, b, b1 uint32)
 			}
 		}()
 	}
-	for finished := 0; finished < pf; finished++ {
+	for finished := 0; finished < parallel; finished++ {
 		var r result
 		select {
 		case r = <-resultC:
