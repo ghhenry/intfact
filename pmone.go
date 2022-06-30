@@ -35,6 +35,12 @@ func PmOne(ctx context.Context, n *big.Int, b, b1 uint32) (fac *big.Int, err err
 	var a = big.NewInt(3)
 	gcd := newGcdtest(n, 20)
 	phase1 := func(p uint32) bool {
+		select {
+		case <-ctx.Done():
+			err = errors.New("cancelled")
+			return true
+		default:
+		}
 		exp := int64(p)
 		for {
 			ne := exp * int64(p)
@@ -60,6 +66,12 @@ func PmOne(ctx context.Context, n *big.Int, b, b1 uint32) (fac *big.Int, err err
 	var prev uint32
 	h := newHelper(a, n)
 	phase2 := func(p uint32) bool {
+		select {
+		case <-ctx.Done():
+			err = errors.New("cancelled")
+			return true
+		default:
+		}
 		if prev == 0 {
 			a.Exp(a, big.NewInt(int64(p)), n)
 		} else {
