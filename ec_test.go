@@ -10,7 +10,7 @@ import (
 )
 
 func TestRandom(t *testing.T) {
-	r := &lcRandom{2}
+	r := &lcRandom{x: 2}
 	p := make([]byte, 10)
 	n, err := r.Read(p)
 	if err != nil {
@@ -36,7 +36,7 @@ func onCurve(c *curve, p point) bool {
 }
 
 func TestRandCurve(t *testing.T) {
-	r := &lcRandom{2}
+	r := &lcRandom{x: 2}
 	c, p := randCurve(r, big.NewInt(47))
 	if !onCurve(c, p) {
 		t.Error("point is not on the curve")
@@ -234,7 +234,7 @@ func TestOrderGf53(t *testing.T) {
 
 func TestOrderRandom(t *testing.T) {
 	//c, p := randCurve(&lcRandom{1}, big.NewInt(2491))
-	c, p := randCurve(&lcRandom{1}, big.NewInt(2503))
+	c, p := randCurve(&lcRandom{x: 1}, big.NewInt(2503))
 	orderCalc(t, c, p)
 }
 
@@ -456,7 +456,7 @@ func TestEc(t *testing.T) {
 			name: "2491",
 			args: args{
 				ctx:    context.Background(),
-				random: &lcRandom{36},
+				random: &lcRandom{x: 36},
 				n:      big.NewInt(2491),
 				b:      10,
 				b1:     100,
@@ -468,7 +468,7 @@ func TestEc(t *testing.T) {
 			name: "n1",
 			args: args{
 				ctx:    context.Background(),
-				random: &lcRandom{13},
+				random: &lcRandom{x: 13},
 				n:      big.NewInt(43217358712783469),
 				b:      1000,
 				b1:     10000,
@@ -480,7 +480,7 @@ func TestEc(t *testing.T) {
 			name: "f6",
 			args: args{
 				ctx:    context.Background(),
-				random: &lcRandom{14},
+				random: &lcRandom{x: 14},
 				n:      intval("18446744073709551617"),
 				b:      1000,
 				b1:     10000,
@@ -492,7 +492,7 @@ func TestEc(t *testing.T) {
 			name: "f7",
 			args: args{
 				ctx:    context.Background(),
-				random: &lcRandom{16},
+				random: &lcRandom{x: 16},
 				n:      intval("340282366920938463463374607431768211457"),
 				b:      10000,
 				b1:     215000,

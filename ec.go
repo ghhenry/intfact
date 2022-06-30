@@ -8,14 +8,18 @@ import (
 	"github.com/ghhenry/primes"
 	"io"
 	"math/big"
+	"sync"
 )
 
 type lcRandom struct {
-	x uint32
+	x     uint32
+	mutex sync.Mutex
 }
 
 // use a simple implementation, the quality of the random numbers does not matter
 func (r *lcRandom) Read(p []byte) (int, error) {
+	r.mutex.Lock()
+	defer r.mutex.Unlock()
 	for i := range p {
 		r.x = 494131989*r.x + 998936465
 		p[i] = byte(r.x >> 24)
