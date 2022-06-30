@@ -274,6 +274,7 @@ func Ec(ctx context.Context, random io.Reader, n *big.Int, b, b1 uint32) (fac *b
 		pt, err = c.mult(pt, big.NewInt(mult))
 		if err != nil {
 			if e, ok := err.(factorError); ok {
+				fmt.Println("factor found in phase1 at", p)
 				fac = e.f
 				err = nil
 			}
@@ -319,6 +320,7 @@ func Ec(ctx context.Context, random io.Reader, n *big.Int, b, b1 uint32) (fac *b
 		}
 		if err != nil {
 			if e, ok := err.(factorError); ok {
+				fmt.Println("factor found in phase2 at", p)
 				fac = e.f
 				err = nil
 			}
