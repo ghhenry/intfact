@@ -7,6 +7,10 @@ import (
 )
 
 // Rho tries to factor n with Pollard's rho method.
+// The function does not return until a factor is found (or an error occurred) or the execution is
+// cancelled via the context.
+//
+// The function returns a factor if one was found or otherwise an error.
 func Rho(ctx context.Context, n *big.Int) (fac *big.Int, err error) {
 	a := big.NewInt(2)
 	c := &big.Int{}

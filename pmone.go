@@ -31,6 +31,10 @@ func (h *p2helper) getPower(e uint32) *big.Int {
 	return h.powers[i]
 }
 
+// PmOne tries to find a factor of n using Pollard's p-1 method.
+// b and b1 are the prime bounds used in phase1 and phase2 respectively.
+//
+// The function returns a factor if one was found or otherwise an error.
 func PmOne(ctx context.Context, n *big.Int, b, b1 uint32) (fac *big.Int, err error) {
 	var a = big.NewInt(3)
 	gcd := newGcdtest(n, 20)

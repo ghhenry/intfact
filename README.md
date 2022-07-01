@@ -6,7 +6,7 @@ Integer factorization
 For the full test suite run
 
 ```shell
-go test .
+go test -timeout 0 .
 ```
 
 To skip the long-running tests do

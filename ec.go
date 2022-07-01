@@ -254,6 +254,12 @@ func (h *p2echelper) getMultiple(e uint32) (point, error) {
 	return h.multiples[i], nil
 }
 
+// Ec tries to find a factor of n using randomness from random for the curve selection.
+// b and b1 are the prime bounds for the phase1 and phase2 respectively.
+// context can be used to cancel the factorization.
+//
+// The function returns a factor in the first return value if there was one found. Otherwise, an error
+// is returned in the second return value.
 func Ec(ctx context.Context, random io.Reader, n *big.Int, b, b1 uint32) (fac *big.Int, err error) {
 	c, pt := randCurve(random, n)
 	phase1 := func(p uint32) bool {
