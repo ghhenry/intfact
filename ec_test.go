@@ -214,7 +214,9 @@ func TestOrderGf47(t *testing.T) {
 		px: big.NewInt(12),
 		py: big.NewInt(4),
 	}
-	orderCalc(t, c, p)
+	if ord := orderCalc(t, c, p); ord != 24 {
+		t.Errorf("got order %v, want 24", ord)
+	}
 }
 
 func TestOrderGf53(t *testing.T) {
@@ -229,16 +231,17 @@ func TestOrderGf53(t *testing.T) {
 		px: big.NewInt(28),
 		py: big.NewInt(46),
 	}
-	orderCalc(t, c, p)
+	if ord := orderCalc(t, c, p); ord != 42 {
+		t.Errorf("got order %v, want 42", ord)
+	}
 }
 
 func TestOrderRandom(t *testing.T) {
-	//c, p := randCurve(&lcRandom{1}, big.NewInt(2491))
 	c, p := randCurve(&lcRandom{x: 1}, big.NewInt(2503))
 	orderCalc(t, c, p)
 }
 
-func orderCalc(t *testing.T, c *curve, p point) {
+func orderCalc(t *testing.T, c *curve, p point) int {
 	fmt.Println("curve", c)
 	var q point = neutral{}
 	var err error
@@ -252,12 +255,12 @@ func orderCalc(t *testing.T, c *curve, p point) {
 		if !onCurve(c, q) {
 			t.Fatal("point is not on curve", q)
 		}
-		fmt.Println(order, q)
+		//fmt.Println(order, q)
 		if q.isZero() {
 			break
 		}
 	}
-	fmt.Printf("the order is %v\n", order)
+	return order
 }
 
 func TestFactorFound(t *testing.T) {
